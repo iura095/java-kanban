@@ -1,22 +1,33 @@
+package com.bistricaIurie.TaskTracker.model;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Epic extends Task {
 
-    public HashMap<Integer, SubTask> subTaskList;
+    public HashMap<Integer, SubTask> subTaskList = new HashMap<>();
 
-    public Epic(String name, String description, HashMap<Integer, SubTask> subTaskList) {
+    public Epic(String name, String description) {
         super(name, description);
-        this.subTaskList = subTaskList;
     }
 
-    public void getSubTaskList() {
-        System.out.println("В " + this.taskName + " содержаться:");
+    public void addSubtask(SubTask subtask) {
+        subTaskList.put(subtask.getTaskID(), subtask);
+    }
+
+    public void deleteSubtask(Integer id) {
+        subTaskList.remove(id);
+    }
+
+    public ArrayList <Task> getSubTaskList() {
+        ArrayList<Task> taskList = new ArrayList<>();
         for (Integer i : subTaskList.keySet()) {
-            System.out.println(subTaskList.get(i).taskName + " , Status = " + subTaskList.get(i).getStatus());
+            taskList.add(subTaskList.get(i));
         }
+        return taskList;
     }
 
-    public void checkEpicStatus() {
+    public void updateEpicStatus() {
         int doneStatusCount = 0;
         int newStatusCount = 0;
         for (SubTask sb : subTaskList.values()) {
@@ -43,8 +54,8 @@ public class Epic extends Task {
     public String toString() {
         return this.getClass() +"{" +
                 "taskID=" + this.getTaskID() +
-                ", taskName='" + taskName + '\'' +
-                ", description='" + description + '\'' +
+                ", taskName='" + this.getTaskName() + '\'' +
+                ", description='" + this.getDescription() + '\'' +
                 ", status=" + this.getStatus() + '\'' +
                 '}';
     }
