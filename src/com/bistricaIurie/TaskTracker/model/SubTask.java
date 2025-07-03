@@ -2,15 +2,15 @@ package com.bistricaIurie.TaskTracker.model;
 
 public class SubTask extends Task {
 
-    private int EpicId;
+    private int epicId;
 
-    public SubTask(String name, String description, int EpicId) {
+    public SubTask(String name, String description, int epicId) {
         super(name, description);
-        this.EpicId = EpicId;
+        this.epicId = epicId;
     }
 
     public Integer getEpicId() {
-        return EpicId;
+        return epicId;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class SubTask extends Task {
                 ", taskName='" + this.getTaskName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
                 ", status=" + this.getStatus() + '\'' +
-                ", whichEpicId='" + EpicId + '\'' +
+                ", whichEpicId='" + epicId + '\'' +
                 '}';
     }
 }

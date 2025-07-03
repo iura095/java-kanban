@@ -19,34 +19,34 @@ public class Epic extends Task {
         subTaskList.remove(id);
     }
 
-    public ArrayList <Task> getSubTaskList() {
-        ArrayList<Task> taskList = new ArrayList<>();
-        for (Integer i : subTaskList.keySet()) {
-            taskList.add(subTaskList.get(i));
-        }
-        return taskList;
+    public ArrayList <SubTask> getSubTaskList() {
+        return new ArrayList<>(subTaskList.values());
     }
 
     public void updateEpicStatus() {
         int doneStatusCount = 0;
         int newStatusCount = 0;
-        for (SubTask sb : subTaskList.values()) {
-            if (sb.getStatus() == TaskStatus.IN_PROGRESS) {
-                this.setStatus(TaskStatus.IN_PROGRESS);
-                break;
-            } else if (sb.getStatus() == TaskStatus.DONE) {
-                doneStatusCount++;
-            } else if (sb.getStatus() == TaskStatus.NEW) {
-                newStatusCount++;
-            }
-        }
-
-        if (doneStatusCount == subTaskList.size()) {
-            this.setStatus(TaskStatus.DONE);
-        }
-
-        if (newStatusCount == subTaskList.size()) {
+        if (subTaskList.isEmpty()) {
             this.setStatus(TaskStatus.NEW);
+        } else {
+            for (SubTask sb : subTaskList.values()) {
+                if (sb.getStatus() == TaskStatus.IN_PROGRESS) {
+                    this.setStatus(TaskStatus.IN_PROGRESS);
+                    break;
+                } else if (sb.getStatus() == TaskStatus.DONE) {
+                    doneStatusCount++;
+                } else if (sb.getStatus() == TaskStatus.NEW) {
+                    newStatusCount++;
+                }
+            }
+
+            if (doneStatusCount == subTaskList.size()) {
+                this.setStatus(TaskStatus.DONE);
+            }
+
+            if (newStatusCount == subTaskList.size()) {
+                this.setStatus(TaskStatus.NEW);
+            }
         }
     }
 
