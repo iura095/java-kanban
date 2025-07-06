@@ -14,6 +14,7 @@ class ManagersTest {
     void getDefault() {
         TaskManager taskManager = Managers.getDefault();
         Task task = new Task("name", "asdf");
+        task.setTaskID(1);
         taskManager.addTask(new Task("name", "asdf"));
         assertEquals(task, taskManager.getTaskByID(1));
     }

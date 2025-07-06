@@ -23,7 +23,7 @@ class SubTaskTest {
 
     @Test
     void getEpicId() {
-        assertEquals(0, task.getEpicId());
+        assertEquals(1, task.getEpicId());
     }
 
     @Test
