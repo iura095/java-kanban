@@ -1,11 +1,17 @@
 package com.bistricaIurie.TaskTracker.model;
 
+import java.util.Objects;
+
 public class SubTask extends Task {
 
     private int epicId;
 
-    public SubTask(String name, String description, int epicId) {
+    public SubTask(String name, String description, Integer epicId) {
         super(name, description);
+        this.epicId = epicId;
+    }
+
+    public void setEpicId(int epicId) {
         this.epicId = epicId;
     }
 
@@ -20,7 +26,7 @@ public class SubTask extends Task {
                 ", taskName='" + this.getTaskName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
                 ", status=" + this.getStatus() + '\'' +
-                ", whichEpicId='" + epicId + '\'' +
+                ", EpicId='" + epicId + '\'' +
                 '}';
     }
 }

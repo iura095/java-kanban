@@ -1,6 +1,7 @@
 package com.bistricaIurie.TaskTracker.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 
 public class Epic extends Task {
@@ -38,6 +39,10 @@ public class Epic extends Task {
                 } else if (sb.getStatus() == TaskStatus.NEW) {
                     newStatusCount++;
                 }
+            }
+
+            if (doneStatusCount > 0) {
+                this.setStatus(TaskStatus.IN_PROGRESS);
             }
 
             if (doneStatusCount == subTaskList.size()) {
