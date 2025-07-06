@@ -26,6 +26,17 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
+    void addNullException() {
+        assertTrue(historyManager.historyList.isEmpty());
+        historyManager.add(new Task("name", "desc"));
+        assertFalse(historyManager.historyList.isEmpty());
+        assertEquals(1, historyManager.historyList.size());
+        historyManager.add(null);
+        assertEquals(1, historyManager.historyList.size());
+
+    }
+
+    @Test
     void getHistory() {
         historyManager.add(new Task("name", "desc"));
         assertFalse(historyManager.historyList.isEmpty());

@@ -6,6 +6,7 @@ import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskManager {
     void addTask(Task task);
@@ -49,4 +50,6 @@ public interface TaskManager {
     void setNewSubTaskStatus(Integer id, TaskStatus newStatus);
 
     ArrayList<SubTask> getSubTaskListByEpicId(Integer id);
+
+    List<Task> getHistory();
 }

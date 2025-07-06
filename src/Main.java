@@ -4,7 +4,7 @@ import com.bistricaIurie.TaskTracker.service.*;
 public class Main {
 
     public static void main(String[] args) {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
+        TaskManager taskManager = Managers.getDefault();
         taskManager.addTask(new Task("task1", "eto 1ii task"));
         taskManager.addTask(new Task("task2", "eto 2oi task"));
         taskManager.addTask(new Task("task3", "eto 3ii task"));
@@ -20,16 +20,11 @@ public class Main {
         taskManager.getTaskByID(1);
         taskManager.getEpicByID(4);
 
-        System.out.println("История:");
-        for (Task task : taskManager.getHistory()) {
-            System.out.println(task);
-        }
-
-        //printAllTasks(taskManager);
+        printAllTasks(taskManager);
 
     }
 
-    private static void printAllTasks(InMemoryTaskManager manager) {
+    private static void printAllTasks(TaskManager manager) {
         System.out.println("Задачи:");
         for (Task task : manager.getTaskList()) {
             System.out.println(task);
