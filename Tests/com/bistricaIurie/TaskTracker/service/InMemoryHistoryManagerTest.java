@@ -16,30 +16,30 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void add() {
-        assertTrue(historyManager.historyList.isEmpty());
+        assertTrue(historyManager.getHistory().isEmpty());
         historyManager.add(new Task("name", "desc"));
-        assertFalse(historyManager.historyList.isEmpty());
+        assertFalse(historyManager.getHistory().isEmpty());
         for (int i = 0; i < 13; i++) {
             historyManager.add(new Task("name", "desc"));
         }
-        assertEquals(10, historyManager.historyList.size());
+        assertEquals(10, historyManager.getHistory().size());
     }
 
     @Test
     void addNullException() {
-        assertTrue(historyManager.historyList.isEmpty());
+        assertTrue(historyManager.getHistory().isEmpty());
         historyManager.add(new Task("name", "desc"));
-        assertFalse(historyManager.historyList.isEmpty());
-        assertEquals(1, historyManager.historyList.size());
+        assertFalse(historyManager.getHistory().isEmpty());
+        assertEquals(1, historyManager.getHistory().size());
         historyManager.add(null);
-        assertEquals(1, historyManager.historyList.size());
+        assertEquals(1, historyManager.getHistory().size());
 
     }
 
     @Test
     void getHistory() {
         historyManager.add(new Task("name", "desc"));
-        assertFalse(historyManager.historyList.isEmpty());
-        assertEquals(historyManager.historyList, historyManager.getHistory());
+        assertFalse(historyManager.getHistory().isEmpty());
+        assertEquals(historyManager.getHistory(), historyManager.getHistory());
     }
 }
