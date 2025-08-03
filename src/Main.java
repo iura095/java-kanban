@@ -19,8 +19,16 @@ public class Main {
         taskManager.getSubTaskByID(6);
         taskManager.getTaskByID(1);
         taskManager.getEpicByID(4);
+        taskManager.getSubTaskByID(6);
+        taskManager.getSubTaskByID(7);
+        taskManager.getSubTaskByID(8);
+        taskManager.getSubTaskByID(9);
+        taskManager.getSubTaskByID(6);
+
+
 
         printAllTasks(taskManager);
+
 
     }
 
@@ -41,6 +49,7 @@ public class Main {
         for (Task subtask : manager.getSubTaskList()) {
             System.out.println(subtask);
         }
+
 
         System.out.println("История:");
         for (Task task : manager.getHistory()) {
