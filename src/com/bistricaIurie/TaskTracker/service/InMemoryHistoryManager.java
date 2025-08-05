@@ -8,38 +8,29 @@ import java.util.List;
 public class InMemoryHistoryManager implements HistoryManager{
 
     private HashMap<Integer, Node> historyList = new HashMap<>();
-    private Node head;
-    private Node tail;
+    private Node head = new Node(null);
+    private Node tail = new Node(null);
     private int size = 0;
+
+    public HashMap<Integer, Node> getHistoryList() {
+        return historyList;
+    }
 
     @Override
     public void add(Task task) {
         if (task == null) {
             return;
         }
-        if (size == 0) {
-            linkLast(task);
-            historyList.put(task.getTaskID(), this.head);
-        } else if (historyList.containsKey(task.getTaskID())) {
-            removeNode(historyList.get(task.getTaskID()));
-            linkLast(task);
-            if (size == 1) {
-                historyList.put(task.getTaskID(), head);
-            } else {
-                historyList.put(task.getTaskID(), tail);
-            }
-        } else {
-            linkLast(task);
-            historyList.put(task.getTaskID(), this.tail);
+        if (historyList.containsKey(task.getTaskID())) {
+            remove(task.getTaskID());
         }
-
+        linkLast(task);
+        historyList.put(task.getTaskID(), tail.getPrev());
     }
 
     @Override
-    public void remove (int id) {
-        if (historyList.containsKey(id)) {
-            removeNode(historyList.get(id));
-        }
+    public void remove(int id) {
+        removeNode(historyList.remove(id));
     }
 
     @Override
@@ -47,22 +38,19 @@ public class InMemoryHistoryManager implements HistoryManager{
         return getTasks();
     }
 
-    public void linkLast (Task task) {
+    public void linkLast(Task task) {
+        Node newNode = new Node(task);
         if (size == 0) {
-            this.head = new Node(task);
-            size++;
-        } else if (size == 1) {
-            this.tail = new Node(task);
-            this.tail.setPrev(head);
-            this.head.setNext(tail);
-            size++;
+            head.setNext(newNode);
+            newNode.setPrev(head);
+            newNode.setNext(tail);
         } else {
-            Node node = tail;
-            this.tail = new Node(task);
-            this.tail.setPrev(node);
-            node.setNext(this.tail);
-            size++;
+            tail.getPrev().setNext(newNode);
+            newNode.setPrev(tail.getPrev());
+            newNode.setNext(tail);
         }
+        tail.setPrev(newNode);
+        size++;
     }
 
     public List<Task> getTasks() {
@@ -70,8 +58,8 @@ public class InMemoryHistoryManager implements HistoryManager{
         if (size == 0) {
             return list;
         } else {
-            Node tempNode = head;
-            for (int i = 0; i < size; i++) {
+            Node tempNode = head.getNext();
+            while (tempNode.getValue() != null) {
                 list.add(tempNode.getValue());
                 tempNode = tempNode.getNext();
             }
@@ -83,30 +71,9 @@ public class InMemoryHistoryManager implements HistoryManager{
         if (node == null) {
             return;
         }
-
-        if (node.getPrev() == null) {
-            head = head.getNext();
-            if (head != null) {
-                head.setPrev(null);
-            }
-            historyList.remove(node.getValue().getTaskID());
-            size--;
-        } else if (node.getNext() == null) {
-            tail = tail.getPrev();
-            if (tail != null) {
-                tail.setNext(null);
-            }
-            historyList.remove(node.getValue().getTaskID());
-            size--;
-            if (size == 1) {
-                head.setNext(null);
-            }
-        } else {
-            node.getPrev().setNext(node.getNext());
-            node.getNext().setPrev(node.getPrev());
-            historyList.remove(node.getValue().getTaskID());
-            size--;
-        }
+        node.getPrev().setNext(node.getNext());
+        node.getNext().setPrev(node.getPrev());
+        size--;
     }
 
     public List<Node> getNodeList() {

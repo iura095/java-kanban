@@ -1,9 +1,9 @@
 package com.bistricaIurie.TaskTracker.model;
 
 public class Node {
-    public Node prev;
-    public Task value;
-    public Node next;
+    private Node prev;
+    private Task value;
+    private Node next;
 
     public Node(Task value) {
         this.value = value;

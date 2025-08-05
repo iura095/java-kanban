@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 class InMemoryHistoryManagerTest {
@@ -66,8 +67,10 @@ class InMemoryHistoryManagerTest {
             task.setTaskID(i);
             historyManager.add(task);
         }
+        assertEquals(4, historyManager.getHistoryList().size());
         assertEquals(4, historyManager.getSize());
         historyManager.remove(2);
+        assertEquals(3, historyManager.getHistoryList().size());
         assertEquals(3, historyManager.getSize());
 
     }
@@ -103,25 +106,15 @@ class InMemoryHistoryManagerTest {
             historyManager.add(task);
         }
 
-        List<Node> list = historyManager.getNodeList();
+        Map<Integer, Node> historyList = historyManager.getHistoryList();
         assertEquals(4, historyManager.getHistory().size());
-        assertEquals(4, historyManager.getNodeList().size());
-        assertTrue(historyManager.getNodeList().contains(list.get(2)));
-        historyManager.removeNode(list.get(2));
+        historyManager.removeNode(historyList.get(3));
         assertEquals(3, historyManager.getHistory().size());
-        assertEquals(3, historyManager.getNodeList().size());
-        assertFalse(historyManager.getNodeList().contains(list.get(2)));
         historyManager.removeNode(null);
         assertEquals(3, historyManager.getHistory().size());
-        assertEquals(3, historyManager.getNodeList().size());
-        historyManager.removeNode(historyManager.getTail());
-        assertEquals(2, historyManager.getHistory().size());
-        assertEquals(2, historyManager.getNodeList().size());
-        historyManager.removeNode(historyManager.getHead());
-        assertEquals(1, historyManager.getHistory().size());
-        assertEquals(1, historyManager.getNodeList().size());
-        assertFalse(historyManager.getNodeList().isEmpty());
-        historyManager.removeNode(historyManager.getHead());
-        assertTrue(historyManager.getNodeList().isEmpty());
+        for (int i = 0; i < 3; i++) {
+            historyManager.remove(i);
+        }
+        assertTrue(historyManager.getHistory().isEmpty());
     }
 }
