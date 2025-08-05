@@ -149,7 +149,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList <SubTask> getSubTaskListByEpicId(Integer id) {
+    public ArrayList<SubTask> getSubTaskListByEpicId(Integer id) {
         return epics.get(id).getSubTaskList();
     }
 
