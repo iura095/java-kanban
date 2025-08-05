@@ -25,8 +25,6 @@ public class Main {
         taskManager.getSubTaskByID(9);
         taskManager.getSubTaskByID(6);
 
-
-
         printAllTasks(taskManager);
 
 

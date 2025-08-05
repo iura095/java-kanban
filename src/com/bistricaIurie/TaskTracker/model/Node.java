@@ -2,7 +2,7 @@ package com.bistricaIurie.TaskTracker.model;
 
 public class Node {
     private Node prev;
-    private Task value;
+    private final Task value;
     private Node next;
 
     public Node(Task value) {
@@ -23,9 +23,9 @@ public class Node {
         return value;
     }
 
-    public void setValue(Task value) {
-        this.value = value;
-    }
+//    public void setValue(Task value) {
+//        this.value = value;
+//    }
 
     public Node getNext() {
         return next;

@@ -1,7 +1,5 @@
 package com.bistricaIurie.TaskTracker.model;
 
-import java.util.Objects;
-
 public class SubTask extends Task {
 
     private int epicId;
@@ -25,7 +23,7 @@ public class SubTask extends Task {
                 "taskID=" + this.getTaskID() +
                 ", taskName='" + this.getTaskName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
-                ", status=" + this.getStatus() + '\'' +
+                ", status='" + this.getStatus() + '\'' +
                 ", EpicId='" + epicId + '\'' +
                 '}';
     }
