@@ -58,6 +58,9 @@ public class InMemoryHistoryManager implements HistoryManager{
         if (size == 0) {
             return list;
         } else {
+            if (head.getNext() == null) {
+                return list;
+            }
             Node tempNode = head.getNext();
             while (tempNode.getValue() != null) {
                 list.add(tempNode.getValue());
