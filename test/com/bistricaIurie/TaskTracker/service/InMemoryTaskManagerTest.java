@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -200,6 +201,7 @@ class InMemoryTaskManagerTest {
 
     @Test
     void setNewSubTaskStatus() {
+        InMemoryTaskManager taskManager = new InMemoryTaskManager();
         taskManager.addEpic(new Epic("name", "desc"));
         taskManager.addSubTask(new SubTask("name", "desc", 1));
         taskManager.addSubTask(new SubTask("name1", "desc2", 1));

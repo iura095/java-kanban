@@ -1,7 +1,6 @@
 package com.bistricaIurie.TaskTracker.model;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 
 public class Epic extends Task {
@@ -20,7 +19,7 @@ public class Epic extends Task {
         subTaskList.remove(id);
     }
 
-    public ArrayList <SubTask> getSubTaskList() {
+    public ArrayList<SubTask> getSubTaskList() {
         return new ArrayList<>(subTaskList.values());
     }
 
@@ -57,7 +56,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return this.getClass() +"{" +
+        return "Epic" + "{" +
                 "taskID=" + this.getTaskID() +
                 ", taskName='" + this.getTaskName() + '\'' +
                 ", description='" + this.getDescription() + '\'' +
