@@ -2,7 +2,6 @@ package com.bistricaIurie.TaskTracker.service;
 
 import com.bistricaIurie.TaskTracker.model.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileBackedTaskManager extends InMemoryTaskManager{
+public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private String savePath = "C:\\Users\\Iura\\AppData\\Local\\Temp\\java-kanban";
     private String fileName = "Tasks.csv";
@@ -38,11 +37,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager{
             tasks.add(task.toString());
         }
 
-        for (Epic task: getEpicList()) {
+        for (Epic task : getEpicList()) {
             tasks.add(task.toString());
         }
 
-        for (SubTask task: getSubTaskList()) {
+        for (SubTask task : getSubTaskList()) {
             tasks.add(task.toString());
         }
 
