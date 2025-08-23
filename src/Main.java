@@ -4,7 +4,8 @@ import com.bistricaIurie.TaskTracker.service.*;
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = Managers.getDefaultFileBacked();
+
+        FileBackedTaskManager taskManager = new FileBackedTaskManager();
         taskManager.addTask(new Task("task1", "eto 1ii task"));
         taskManager.addTask(new Task("task2", "eto 2oi task"));
         taskManager.addTask(new Task("task3", "eto 3ii task"));
@@ -25,10 +26,9 @@ public class Main {
         taskManager.getSubTaskByID(9);
         taskManager.getSubTaskByID(6);
 
-        printAllTasks(taskManager);
-        FileBackedTaskManager tm = Managers.getDefaultFileBacked();
-        tm.loadFromFile();
-        //printAllTasks(tm);
+//        printAllTasks(taskManager);
+        FileBackedTaskManager tm = FileBackedTaskManager.loadFromFile();
+        printAllTasks(tm);
 
 
     }

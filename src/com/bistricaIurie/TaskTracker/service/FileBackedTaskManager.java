@@ -2,7 +2,7 @@ package com.bistricaIurie.TaskTracker.service;
 
 import com.bistricaIurie.TaskTracker.model.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,12 +11,12 @@ import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    private String savePath = "C:\\Users\\Iura\\AppData\\Local\\Temp\\java-kanban";
-    private String fileName = "Tasks.csv";
-    private final Path dir = Paths.get(savePath);
-    private final Path saveFile = Paths.get(savePath, fileName);
+    private static String savePath = Paths.get("").toAbsolutePath() + "\\saves\\";
+    private static String fileName = "Tasks.csv";
+    private static final Path dir = Paths.get(savePath);
+    private static final Path saveFile = Paths.get(savePath, fileName);
 
-    private void checkFileState() throws FileCeckException {
+    private static void checkFileState() throws FileCeckException {
         try {
             if (Files.isDirectory(dir)) {
                 if (!Files.isRegularFile(saveFile)) {
@@ -47,72 +47,70 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         try {
             checkFileState();
-            Files.deleteIfExists(saveFile);
-            Files.createFile(saveFile);
-            Files.write(saveFile, tasks);
-        } catch (IOException e) {
-            System.out.println("Ошибка сохранения данных.");
         } catch (FileCeckException e) {
-            System.out.println(e.getMessage());
+            throw new ManagerSaveException(e.getMessage());
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(savePath + fileName))) {
+            for (String task : tasks) {
+                writer.write(task + "\n");
+            }
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка сохранения данных.");
         }
     }
 
-    public void loadFromFile() {
+    public static FileBackedTaskManager loadFromFile() {
+        FileBackedTaskManager newManager = new FileBackedTaskManager();
+
         try {
             checkFileState();
-            List<String> lines = Files.readAllLines(saveFile);
-            clearEpicList();
-            clearTaskList();
-            clearSubTaskList();
-            setTaskCount(0);
-            for (String line : lines) {
+        } catch (FileCeckException e) {
+            throw new ManagerSaveException(e.getMessage());
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(savePath + fileName))) {
+            String line;
+            TaskStatus status = TaskStatus.NEW;
+            while ((line = reader.readLine()) != null) {
                 String[] sLine = line.split(",");
                 if (sLine[1].equals(TaskType.TASK.toString())) {
-                    TaskStatus status = TaskStatus.NEW;
                     status = switch (sLine[3]) {
                         case "NEW" -> TaskStatus.NEW;
                         case "DONE" -> TaskStatus.DONE;
                         case "IN_PROGRESS" -> TaskStatus.IN_PROGRESS;
                         default -> status;
                     };
-                    Task task = new Task(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status);
-                    addTask(task);
+                    newManager.loadTask(new Task(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status));
                 } else if (sLine[1].equals(TaskType.SUBTASK.toString())) {
-                    TaskStatus status = TaskStatus.NEW;
                     status = switch (sLine[3]) {
                         case "NEW" -> TaskStatus.NEW;
                         case "DONE" -> TaskStatus.DONE;
                         case "IN_PROGRESS" -> TaskStatus.IN_PROGRESS;
                         default -> status;
                     };
-                    SubTask task = new SubTask(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status,
-                            Integer.parseInt(sLine[5]));
-                    addSubTask(task);
+                    newManager.loadSubTask(new SubTask(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status,
+                            Integer.parseInt(sLine[5])));
                 } else if (sLine[1].equals(TaskType.EPIC.toString())) {
-                    TaskStatus status = TaskStatus.NEW;
                     status = switch (sLine[3]) {
                         case "NEW" -> TaskStatus.NEW;
                         case "DONE" -> TaskStatus.DONE;
                         case "IN_PROGRESS" -> TaskStatus.IN_PROGRESS;
                         default -> status;
                     };
-                    Epic task = new Epic(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status);
-                    addEpic(task);
+                    newManager.loadEpic(new Epic(Integer.parseInt(sLine[0]), sLine[2], sLine[4], status));
                 }
             }
-        } catch (FileCeckException e) {
-            System.out.println(e.getMessage());
+        } catch (FileNotFoundException e) {
+            throw new ManagerSaveException(e.getMessage());
         } catch (IOException e) {
-            System.out.println("Ошибка чтения файла сохранения.");
+            throw new ManagerSaveException("Ошибка загрузки файла сохранения.");
         }
-    }
-
-    public String getSavePath() {
-        return savePath;
+        return newManager;
     }
 
     public void setSavePath(String savePath) {
-        this.savePath = savePath;
+        FileBackedTaskManager.savePath = savePath;
     }
 
     public String getFileName() {
@@ -120,7 +118,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        FileBackedTaskManager.fileName = fileName;
+    }
+
+    public void loadTask(Task task) {
+        super.addTask(task);
+    }
+
+    public void loadSubTask(SubTask task) {
+        super.addSubTask(task);
+    }
+
+    public void loadEpic(Epic task) {
+        super.addEpic(task);
     }
 
     @Override

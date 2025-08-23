@@ -6,7 +6,6 @@ import java.util.HashMap;
 public class Epic extends Task {
 
     private TaskType type;
-
     public HashMap<Integer, SubTask> subTaskList = new HashMap<>();
 
     public Epic(String name, String description) {

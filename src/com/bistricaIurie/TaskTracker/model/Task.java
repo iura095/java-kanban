@@ -13,7 +13,6 @@ public class Task {
         this.taskName = taskName;
         this.description = description;
         status = TaskStatus.NEW;
-        //this.type = TaskType.TASK;
     }
 
     public Task(int taskID, String taskName, String description, TaskStatus status) {
@@ -21,7 +20,6 @@ public class Task {
         this.taskName = taskName;
         this.description = description;
         this.status = status;
-        //this.type = TaskType.TASK;
     }
 
     public int getTaskID() {
