@@ -5,10 +5,17 @@ import java.util.HashMap;
 
 public class Epic extends Task {
 
+    private TaskType type;
     public HashMap<Integer, SubTask> subTaskList = new HashMap<>();
 
     public Epic(String name, String description) {
         super(name, description);
+        this.type = TaskType.EPIC;
+    }
+
+    public Epic(int taskID, String taskName, String description, TaskStatus status) {
+        super(taskID,taskName, description, status);
+        this.type = TaskType.EPIC;
     }
 
     public void addSubtask(SubTask subtask) {
@@ -55,12 +62,16 @@ public class Epic extends Task {
     }
 
     @Override
+    public TaskType getType() {
+        return this.type;
+    }
+
+    @Override
     public String toString() {
-        return "Epic" + "{" +
-                "taskID=" + this.getTaskID() +
-                ", taskName='" + this.getTaskName() + '\'' +
-                ", description='" + this.getDescription() + '\'' +
-                ", status=" + this.getStatus() + '\'' +
-                '}';
+        return this.getTaskID() +
+                "," + this.getType() +
+                "," + this.getTaskName() +
+                "," + this.getStatus() +
+                "," + this.getDescription();
     }
 }
