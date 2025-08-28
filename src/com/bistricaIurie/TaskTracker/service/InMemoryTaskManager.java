@@ -153,6 +153,14 @@ public class InMemoryTaskManager implements TaskManager {
         return epics.get(id).getSubTaskList();
     }
 
+    public int getTaskCount() {
+        return taskCount;
+    }
+
+    public void setTaskCount(int taskCount) {
+        this.taskCount = taskCount;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

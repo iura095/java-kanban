@@ -7,11 +7,19 @@ public class Task {
     private String taskName;
     private String description;
     private TaskStatus status;
+    private final TaskType type = TaskType.TASK;
 
     public Task(String taskName, String description) {
         this.taskName = taskName;
         this.description = description;
         status = TaskStatus.NEW;
+    }
+
+    public Task(int taskID, String taskName, String description, TaskStatus status) {
+        this.taskID = taskID;
+        this.taskName = taskName;
+        this.description = description;
+        this.status = status;
     }
 
     public int getTaskID() {
@@ -46,6 +54,10 @@ public class Task {
         this.description = description;
     }
 
+    public TaskType getType() {
+        return type;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -60,11 +72,10 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task" + "{" +
-                "taskID=" + taskID +
-                ", taskName='" + taskName + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                '}';
+        return this.taskID +
+                "," + this.type +
+                "," + this.taskName +
+                "," + this.status +
+                "," + this.description;
     }
 }
