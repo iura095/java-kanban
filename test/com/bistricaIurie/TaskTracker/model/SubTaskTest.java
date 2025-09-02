@@ -1,10 +1,9 @@
 package com.bistricaIurie.TaskTracker.model;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SubTaskTest {
 
@@ -29,7 +28,7 @@ class SubTaskTest {
     @Test
     void subTaskIdEquals() {
         SubTask task2 = new SubTask("subtask2", "description2", 1);
-        assertTrue(task.equals(task2));
+        assertEquals(task, task2);
     }
 
 }

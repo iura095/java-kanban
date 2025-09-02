@@ -4,6 +4,7 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import com.bistricaIurie.TaskTracker.model.error.TaskException;
 
 import java.util.*;
 
@@ -12,7 +13,7 @@ public class InMemoryTaskManager implements TaskManager {
     private Map<Integer, Task> tasks = new HashMap<>();
     private Map<Integer, SubTask> subTasks = new HashMap<>();
     private Map<Integer, Epic> epics = new HashMap<>();
-    private int taskCount = 0;
+    private static int taskCount = 0;
 
     public HistoryManager getHistoryManager() {
         return historyManager;
@@ -29,9 +30,13 @@ public class InMemoryTaskManager implements TaskManager {
     public void addSubTask(SubTask task) {
         taskCount++;
         task.setTaskID(taskCount);
-        subTasks.put(task.getTaskID(), task);
-        epics.get(task.getEpicId()).addSubtask(task);
-        epics.get(task.getEpicId()).updateEpicStatus();
+        try {
+            epics.get(task.getEpicId()).addSubtask(task);
+            subTasks.put(task.getTaskID(), task);
+        } catch (NullPointerException e) {
+            taskCount--;
+            throw new TaskException("Попытка добавить подзадачу без указания суперзадачи к которой она принадлежит.");
+        }
     }
 
     @Override
@@ -64,10 +69,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void clearSubTaskList() {
         subTasks.clear();
-        for (Integer i : epics.keySet()) {
-            epics.get(i).subTaskList.clear();
-            epics.get(i).updateEpicStatus();
-        }
+        epics.values().forEach(Epic::clearSubtaskList);
     }
 
     @Override
@@ -105,8 +107,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubTask(SubTask subTask) {
         subTasks.put(subTask.getTaskID(), subTask);
-        epics.get(subTask.getEpicId()).subTaskList.put(subTask.getTaskID(), subTask);
-        epics.get(subTask.getEpicId()).updateEpicStatus();
+        epics.get(subTask.getEpicId()).addSubtask(subTask);
     }
 
     @Override
@@ -121,16 +122,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteSubTask(Integer id) {
-        epics.get(subTasks.get(id).getEpicId()).subTaskList.remove(id);
-        epics.get(subTasks.get(id).getEpicId()).updateEpicStatus();
+        epics.get(subTasks.get(id).getEpicId()).deleteSubtask(id);
         subTasks.remove(id);
     }
 
     @Override
     public void deleteEpic(Integer id) {
-        for (SubTask subTask : epics.get(id).getSubTaskList()) {
-            subTasks.remove(subTask.getTaskID());
-        }
+        epics.get(id).getSubTaskList().forEach(
+                s -> subTasks.remove(s.getTaskID())
+        );
         epics.remove(id);
     }
 
@@ -153,12 +153,12 @@ public class InMemoryTaskManager implements TaskManager {
         return epics.get(id).getSubTaskList();
     }
 
-    public int getTaskCount() {
+    public static int getTaskCount() {
         return taskCount;
     }
 
     public void setTaskCount(int taskCount) {
-        this.taskCount = taskCount;
+        InMemoryTaskManager.taskCount = taskCount;
     }
 
     @Override

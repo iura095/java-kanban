@@ -4,24 +4,29 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
 
-    TaskManager taskManager;
+    InMemoryTaskManager taskManager;
     Task task;
     Epic epic;
     SubTask subTask;
 
     @BeforeEach
     void setUp() {
-        taskManager = Managers.getDefault();
+        taskManager = new InMemoryTaskManager();
+    }
+
+    @AfterEach
+    void setEnd() {
+        taskManager.setTaskCount(0);
     }
 
     @Test
@@ -154,7 +159,7 @@ class InMemoryTaskManagerTest {
     @Test
     void updateEpic() {
         taskManager.addEpic(new Epic("name", "desc"));
-        Epic epic1 =  new Epic("EpicName", "epicDesc");
+        Epic epic1 = new Epic("EpicName", "epicDesc");
         epic1.setTaskID(1);
         taskManager.updateEpic(epic1);
         assertEquals(epic1, taskManager.getEpicList().getFirst());
