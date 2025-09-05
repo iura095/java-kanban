@@ -7,25 +7,22 @@ import java.time.format.DateTimeFormatter;
 public class SubTask extends Task {
 
     private int epicId;
-    private final TaskType type;
+    private final TaskType type = TaskType.SUBTASK;
 
     public SubTask(String name, String description, Integer epicId) {
         super(name, description);
-        this.type = TaskType.SUBTASK;
         this.epicId = epicId;
     }
 
     public SubTask(int taskID, String taskName, String description, TaskStatus status, int epicId,
                    Duration duration, LocalDateTime startTime) {
         super(taskID, taskName, description, status, duration, startTime);
-        this.type = TaskType.SUBTASK;
         this.epicId = epicId;
     }
 
     public SubTask(int taskID, String taskName, String description, TaskStatus status, int epicId,
                    Duration duration) {
         super(taskID, taskName, description, status, duration);
-        this.type = TaskType.SUBTASK;
         this.epicId = epicId;
     }
 

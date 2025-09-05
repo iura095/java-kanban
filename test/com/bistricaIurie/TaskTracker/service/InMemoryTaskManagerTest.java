@@ -4,235 +4,281 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import com.bistricaIurie.TaskTracker.model.error.TaskException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
 
-    InMemoryTaskManager taskManager;
-    Task task;
-    Epic epic;
-    SubTask subTask;
+    InMemoryTaskManager tm;
+    public Task task1, task2;
+    public Epic epic1;
+    public SubTask subTask1, subTask2;
 
     @BeforeEach
     void setUp() {
-        taskManager = new InMemoryTaskManager();
+        tm = new InMemoryTaskManager();
+        task1 = new Task(1, "name", "desc", TaskStatus.NEW, Duration.ZERO
+                , LocalDateTime.now());
+        task2 = new Task(2, "name", "desc", TaskStatus.NEW, Duration.ZERO
+                , LocalDateTime.now());
+        epic1 = new Epic(3, "name", "desc");
+        subTask1 = new SubTask(4, "name", "desc", TaskStatus.NEW, epic1.getTaskID()
+                , Duration.ZERO
+                , LocalDateTime.now());
+        subTask2 = new SubTask(5, "name", "desc", TaskStatus.NEW, 3, Duration.ZERO
+                , LocalDateTime.now());
     }
 
     @AfterEach
     void setEnd() {
-        taskManager.setTaskCount(0);
+        tm.setTaskCount(0);
+    }
+
+    @Test
+    void checkTaskIntersection() {
+        task1.setDuration(Duration.ofMinutes(10));
+        task2.setDuration(Duration.ofMinutes(5));
+        tm.addTask(task1);
+        assertFalse(tm.checkTaskIntersection(task2));
+        task2.setStartTime(task2.getStartTime().plusMinutes(25));
+        assertTrue(tm.checkTaskIntersection(task2));
+        subTask1.setStartTime(subTask1.getStartTime().plusMinutes(13));
+        subTask1.setDuration(Duration.ofMinutes(5));
+        assertTrue(tm.checkTaskIntersection(subTask1));
+    }
+
+    @Test
+    void prioritizeTaskAndGetPrioritizeList() {
+        task1.setStartTime(task1.getStartTime().plusMinutes(5));
+        tm.prioritizeTask(task1);
+        tm.prioritizeTask(task2);
+        assertEquals(List.of(task2, task1), tm.getPrioritizedTasks());
     }
 
     @Test
     void addTask() {
-        task = new Task("name", "desc");
-        taskManager.addTask(task);
-        assertEquals(task, taskManager.getTaskByID(1));
+        tm.addTask(task1);
+        assertEquals(task1, tm.getTaskByID(1));
     }
 
     @Test
     void addSubTask() {
-        subTask = new SubTask("name", "desc", 1);
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(subTask);
-        assertEquals(subTask, taskManager.getSubTaskByID(2));
+        assertThrows(TaskException.class, () -> tm.addSubTask(subTask1));
+        tm.addEpic(epic1);
+        subTask1.setEpicId(epic1.getTaskID());
+        tm.addSubTask(subTask1);
+        assertEquals(subTask1, tm.getSubTaskList().getFirst());
+        assertEquals(subTask1, epic1.getSubTaskList().getFirst());
     }
 
     @Test
     void addEpic() {
-        epic = new Epic("name", "desc");
-        taskManager.addEpic(epic);
-        assertEquals(epic, taskManager.getEpicByID(1));
+        tm.addEpic(epic1);
+        assertEquals(epic1, tm.getEpicByID(1));
     }
 
     @Test
     void getTaskList() {
-        task = new Task("name", "desc");
-        taskManager.addTask(task);
+        tm.addTask(task1);
         ArrayList<Task> list = new ArrayList<>();
-        list.add(task);
-        assertEquals(list, taskManager.getTaskList());
+        list.add(task1);
+        assertEquals(list, tm.getTaskList());
     }
 
     @Test
     void getSubTaskList() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        subTask = new SubTask("name", "desc", 1);
-        taskManager.addSubTask(subTask);
+        tm.addEpic(epic1);
+        subTask1.setEpicId(1);
+        tm.addSubTask(subTask1);
         ArrayList<SubTask> list = new ArrayList<>();
-        list.add(subTask);
-        assertEquals(list, taskManager.getSubTaskList());
+        list.add(subTask1);
+        assertEquals(list, tm.getSubTaskList());
     }
 
     @Test
     void getEpicList() {
-        epic = new Epic("name", "desc");
-        taskManager.addEpic(epic);
+        tm.addEpic(epic1);
         ArrayList<Epic> list = new ArrayList<>();
-        list.add(epic);
-        assertEquals(list, taskManager.getEpicList());
+        list.add(epic1);
+        assertEquals(list, tm.getEpicList());
     }
 
     @Test
     void clearTaskList() {
-        taskManager.addTask(new Task("name", "desc"));
-        assertFalse(taskManager.getTaskList().isEmpty());
-        taskManager.clearTaskList();
-        assertTrue(taskManager.getTaskList().isEmpty());
+        tm.addTask(task1);
+        assertFalse(tm.getTaskList().isEmpty());
+        tm.clearTaskList();
+        assertTrue(tm.getTaskList().isEmpty());
     }
 
     @Test
     void clearSubTaskList() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        assertFalse(taskManager.getSubTaskList().isEmpty());
-        assertFalse(taskManager.getEpicByID(1).getSubTaskList().isEmpty());
-        taskManager.clearSubTaskList();
-        assertTrue(taskManager.getSubTaskList().isEmpty());
-        assertTrue(taskManager.getEpicByID(1).getSubTaskList().isEmpty());
+        tm.addEpic(epic1);
+        subTask1.setEpicId(1);
+        tm.addSubTask(subTask1);
+        assertFalse(tm.getSubTaskList().isEmpty());
+        assertFalse(tm.getEpicByID(1).getSubTaskList().isEmpty());
+        tm.clearSubTaskList();
+        assertTrue(tm.getSubTaskList().isEmpty());
+        assertTrue(tm.getEpicByID(1).getSubTaskList().isEmpty());
     }
 
     @Test
     void clearEpicList() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        assertFalse(taskManager.getEpicList().isEmpty());
-        assertFalse(taskManager.getSubTaskList().isEmpty());
-        taskManager.clearEpicList();
-        assertTrue(taskManager.getEpicList().isEmpty());
-        assertTrue(taskManager.getSubTaskList().isEmpty());
+        tm.addEpic(epic1);
+        subTask1.setEpicId(1);
+        tm.addSubTask(subTask1);
+        assertFalse(tm.getEpicList().isEmpty());
+        assertFalse(tm.getSubTaskList().isEmpty());
+        tm.clearEpicList();
+        assertTrue(tm.getEpicList().isEmpty());
+        assertTrue(tm.getSubTaskList().isEmpty());
     }
 
     @Test
     void getTaskByID() {
-        task = new Task("name", "desc");
-        taskManager.addTask(task);
-        Task task2 = taskManager.getTaskByID(1);
-        assertEquals(task, task2);
+        tm.addTask(task1);
+        Task ntask = tm.getTaskByID(1);
+        assertEquals(task1, ntask);
     }
 
     @Test
     void getSubTaskByID() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        subTask = new SubTask("name", "desc", 1);
-        taskManager.addSubTask(subTask);
-        SubTask subTask2 = taskManager.getSubTaskByID(2);
-        assertEquals(subTask, subTask2);
+        tm.addEpic(epic1);
+        subTask1.setEpicId(1);
+        tm.addSubTask(subTask1);
+        SubTask ntask = tm.getSubTaskByID(2);
+        assertEquals(subTask1, ntask);
     }
 
     @Test
     void getEpicByID() {
-        epic = new Epic("name", "desc");
-        taskManager.addEpic(epic);
-        Epic epic1 = taskManager.getEpicByID(1);
+        tm.addEpic(epic1);
+        Epic epic = tm.getEpicByID(1);
         assertEquals(epic, epic1);
     }
 
     @Test
     void updateTask() {
-        taskManager.addTask(new Task("name", "desc"));
+        tm.addTask(task1);
         Task newTask = new Task("name1", "desc1");
         newTask.setTaskID(1);
-        taskManager.updateTask(newTask);
-        assertEquals(1, taskManager.getTaskList().size());
-        assertEquals(newTask, taskManager.getTaskByID(1));
+        tm.updateTask(newTask);
+        assertEquals(1, tm.getTaskList().size());
+        assertEquals(newTask, tm.getTaskByID(1));
 
     }
 
     @Test
     void updateSubTask() {
-        taskManager.addEpic(new Epic("epic", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        SubTask subTask1 = new SubTask("name", "desc", 1);
-        subTask1.setTaskID(2);
-        taskManager.updateSubTask(subTask1);
-        assertEquals(subTask1, taskManager.getSubTaskList().getFirst());
-        assertEquals(subTask1, taskManager.getEpicByID(1).getSubTaskList().getFirst());
+        tm.addEpic(epic1);
+        subTask1.setEpicId(1);
+        tm.addSubTask(subTask1);
+        SubTask subTask = new SubTask("name", "desc", 1);
+        subTask.setTaskID(2);
+        tm.updateSubTask(subTask);
+        assertEquals(subTask, tm.getSubTaskList().getFirst());
+        assertEquals(subTask, tm.getEpicByID(1).getSubTaskList().getFirst());
     }
 
     @Test
     void updateEpic() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        Epic epic1 = new Epic("EpicName", "epicDesc");
-        epic1.setTaskID(1);
-        taskManager.updateEpic(epic1);
-        assertEquals(epic1, taskManager.getEpicList().getFirst());
+        tm.addEpic(epic1);
+        Epic epic = new Epic("EpicName", "epicDesc");
+        epic.setTaskID(1);
+        tm.updateEpic(epic);
+        assertEquals(epic, tm.getEpicList().getFirst());
     }
 
     @Test
     void deleteTask() {
-        taskManager.addTask(new Task("name", "desc"));
-        assertEquals(1, taskManager.getTaskList().size());
-        taskManager.deleteTask(1);
-        assertTrue(taskManager.getTaskList().isEmpty());
+        tm.addTask(task1);
+        assertEquals(1, tm.getTaskList().size());
+        tm.deleteTask(1);
+        assertTrue(tm.getTaskList().isEmpty());
     }
 
     @Test
-    void deleteSubTask() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        assertFalse(taskManager.getSubTaskList().isEmpty());
-        assertFalse(taskManager.getEpicByID(1).getSubTaskList().isEmpty());
-        taskManager.deleteSubTask(2);
-        assertTrue(taskManager.getSubTaskList().isEmpty());
-        assertTrue(taskManager.getEpicByID(1).getSubTaskList().isEmpty());
-    }
-
-    @Test
-    void deleteEpic() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        assertFalse(taskManager.getSubTaskList().isEmpty());
-        assertFalse(taskManager.getEpicList().isEmpty());
-        taskManager.deleteEpic(1);
-        assertTrue(taskManager.getEpicList().isEmpty());
-        assertTrue(taskManager.getSubTaskList().isEmpty());
+    void deleteSubTaskAndEpic() {
+        tm.addTask(task1);
+        tm.addTask(task2);
+        tm.addEpic(epic1);
+        tm.addSubTask(subTask1);
+        tm.addSubTask(subTask2);
+        assertEquals(2, tm.getSubTaskList().size());
+        tm.deleteSubTask(subTask1.getTaskID());
+        assertEquals(1, tm.getSubTaskList().size());
+        assertFalse(tm.getSubTaskList().isEmpty());
+        assertFalse(tm.getEpicList().isEmpty());
+        tm.deleteEpic(epic1.getTaskID());
+        assertTrue(tm.getSubTaskList().isEmpty());
+        assertTrue(tm.getEpicList().isEmpty());
     }
 
     @Test
     void setNewTaskStatus() {
-        taskManager.addTask(new Task("name", "desc"));
-        assertEquals(TaskStatus.NEW, taskManager.getTaskByID(1).getStatus());
-        taskManager.setNewTaskStatus(1, TaskStatus.DONE);
-        assertEquals(TaskStatus.DONE, taskManager.getTaskByID(1).getStatus());
+        tm.addTask(task1);
+        assertEquals(TaskStatus.NEW, tm.getTaskByID(1).getStatus());
+        tm.setNewTaskStatus(1, TaskStatus.DONE);
+        assertEquals(TaskStatus.DONE, tm.getTaskByID(1).getStatus());
 
     }
 
     @Test
     void setNewSubTaskStatus() {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        taskManager.addEpic(new Epic("name", "desc"));
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        taskManager.addSubTask(new SubTask("name1", "desc2", 1));
-        assertEquals(TaskStatus.NEW, taskManager.getEpicByID(1).getStatus());
-        assertEquals(TaskStatus.NEW, taskManager.getSubTaskByID(2).getStatus());
-        assertEquals(TaskStatus.NEW, taskManager.getSubTaskByID(3).getStatus());
-        taskManager.setNewSubTaskStatus(2, TaskStatus.IN_PROGRESS);
-        assertEquals(TaskStatus.IN_PROGRESS, taskManager.getEpicByID(1).getStatus());
-        assertEquals(TaskStatus.IN_PROGRESS, taskManager.getSubTaskByID(2).getStatus());
-        taskManager.setNewSubTaskStatus(2, TaskStatus.DONE);
-        assertEquals(TaskStatus.IN_PROGRESS, taskManager.getEpicByID(1).getStatus());
-        assertEquals(TaskStatus.DONE, taskManager.getSubTaskByID(2).getStatus());
-        taskManager.setNewSubTaskStatus(3, TaskStatus.DONE);
-        assertEquals(TaskStatus.DONE, taskManager.getEpicByID(1).getStatus());
-        assertEquals(TaskStatus.DONE, taskManager.getSubTaskByID(2).getStatus());
-        assertEquals(TaskStatus.DONE, taskManager.getSubTaskByID(3).getStatus());
+        tm.addTask(task1);
+        tm.addTask(task2);
+        tm.addEpic(epic1);
+        tm.addSubTask(subTask1);
+        tm.addSubTask(subTask2);
+        assertEquals(TaskStatus.NEW, epic1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask2.getStatus());
+
+        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.IN_PROGRESS);
+        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
+        assertEquals(TaskStatus.IN_PROGRESS, subTask1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask2.getStatus());
+
+        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.DONE);
+        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
+        assertEquals(TaskStatus.DONE, subTask1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask2.getStatus());
+
+        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.IN_PROGRESS);
+        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
+        assertEquals(TaskStatus.DONE, subTask1.getStatus());
+        assertEquals(TaskStatus.IN_PROGRESS, subTask2.getStatus());
+
+        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.DONE);
+        assertEquals(TaskStatus.DONE, epic1.getStatus());
+        assertEquals(TaskStatus.DONE, subTask1.getStatus());
+        assertEquals(TaskStatus.DONE, subTask2.getStatus());
+
+        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.NEW);
+        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.NEW);
+        assertEquals(TaskStatus.NEW, epic1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask1.getStatus());
+        assertEquals(TaskStatus.NEW, subTask2.getStatus());
     }
 
     @Test
     void getSubTaskListByEpicId() {
-        taskManager.addEpic(new Epic("name", "desc"));
-        assertTrue(taskManager.getSubTaskListByEpicId(1).isEmpty());
-        taskManager.addSubTask(new SubTask("name", "desc", 1));
-        taskManager.addSubTask(new SubTask("name1", "desc2", 1));
-        assertFalse(taskManager.getSubTaskListByEpicId(1).isEmpty());
-        assertEquals(2, taskManager.getSubTaskListByEpicId(1).size());
+        tm.addEpic(new Epic("name", "desc"));
+        assertTrue(tm.getSubTaskListByEpicId(1).isEmpty());
+        tm.addSubTask(new SubTask("name", "desc", 1));
+        tm.addSubTask(new SubTask("name1", "desc2", 1));
+        assertFalse(tm.getSubTaskListByEpicId(1).isEmpty());
+        assertEquals(2, tm.getSubTaskListByEpicId(1).size());
     }
 
     @Test

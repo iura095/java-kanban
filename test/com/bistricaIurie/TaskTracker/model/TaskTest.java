@@ -83,7 +83,6 @@ class TaskTest {
 
     @Test
     void getEndTime() {
-        assertThrows(TaskException.class, () -> task.getEndTime());
         task.setStartTime(LocalDateTime.MIN);
         task.setDuration(Duration.ofMinutes(15));
         assertEquals(LocalDateTime.MIN.plusMinutes(15), task.getEndTime());

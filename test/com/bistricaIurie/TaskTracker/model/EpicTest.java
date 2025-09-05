@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,6 +13,7 @@ class EpicTest {
 
     Epic epic;
     SubTask subTask1, subTask2;
+    LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
     @BeforeEach
     void setUp() {
@@ -47,7 +49,7 @@ class EpicTest {
     void updateEpicStatus() {
         epic.addSubtask(subTask1);
         subTask1.setStatus(TaskStatus.DONE);
-        epic.updateEpicStatus();
+        epic.updateEpicFields();
         assertEquals(TaskStatus.DONE, epic.getStatus());
     }
 
@@ -61,12 +63,12 @@ class EpicTest {
     void updateStartTime() {
         assertNull(epic.getStartTime());
         epic.addSubtask(subTask1);
-        subTask1.setStartTime(LocalDateTime.MIN.plusMinutes(50));
-        epic.updateStartTime();
-        assertEquals(LocalDateTime.MIN.plusMinutes(50), epic.getStartTime());
-        subTask2.setStartTime(LocalDateTime.MIN.plusMinutes(15));
+        subTask1.setStartTime(now.plusMinutes(50));
+        epic.updateEpicFields();
+        assertEquals(now.plusMinutes(50), epic.getStartTime());
+        subTask2.setStartTime(now.plusMinutes(15));
         epic.addSubtask(subTask2);
-        assertEquals(LocalDateTime.MIN.plusMinutes(15), epic.getStartTime());
+        assertEquals(now.plusMinutes(15), epic.getStartTime());
 
     }
 
@@ -86,17 +88,17 @@ class EpicTest {
     @Test
     void updateEndTime() {
         assertNull(epic.getEndTime());
-        subTask1.setStartTime(LocalDateTime.MIN);
+        subTask1.setStartTime(now);
         subTask1.setDuration(Duration.ofMinutes(60));
         epic.addSubtask(subTask1);
-        assertEquals(LocalDateTime.MIN.plusMinutes(60), epic.getEndTime());
-        subTask2.setStartTime(LocalDateTime.MIN);
+        assertEquals(now.plusMinutes(60), epic.getEndTime());
+        subTask2.setStartTime(now);
         subTask2.setDuration(Duration.ofMinutes(75));
         epic.addSubtask(subTask2);
-        assertEquals(LocalDateTime.MIN.plusMinutes(75), epic.getEndTime());
+        assertEquals(now.plusMinutes(75), epic.getEndTime());
         subTask2.setDuration(Duration.ofMinutes(45));
         epic.addSubtask(subTask2);
-        assertEquals(LocalDateTime.MIN.plusMinutes(60), epic.getEndTime());
+        assertEquals(now.plusMinutes(60), epic.getEndTime());
     }
 
     @Test

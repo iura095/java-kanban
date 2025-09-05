@@ -4,20 +4,18 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
-import com.bistricaIurie.TaskTracker.model.error.TaskException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class FileBackedTaskManagerTest {
     public FileBackedTaskManager tm;
@@ -47,19 +45,6 @@ class FileBackedTaskManagerTest {
         tm.setSavePath(newPath);
         tm.setFileName("Tasks.csv");
 
-    }
-
-    @Test
-    void checkTaskIntersection() {
-        task1.setDuration(Duration.ofMinutes(10));
-        task2.setDuration(Duration.ofMinutes(5));
-        tm.addTask(task1);
-        assertFalse(tm.checkTaskIntersection(task2));
-        task2.setStartTime(task2.getStartTime().plusMinutes(25));
-        assertTrue(tm.checkTaskIntersection(task2));
-        subTask1.setStartTime(subTask1.getStartTime().plusMinutes(13));
-        subTask1.setDuration(Duration.ofMinutes(5));
-        assertTrue(tm.checkTaskIntersection(subTask1));
     }
 
     @Test
@@ -105,14 +90,6 @@ class FileBackedTaskManagerTest {
     }
 
     @Test
-    void prioritizeTaskAndGetPrioritizeList() {
-        task1.setStartTime(task1.getStartTime().plusMinutes(5));
-        tm.prioritizeTask(task1);
-        tm.prioritizeTask(task2);
-        assertEquals(List.of(task2, task1), tm.getPrioritizedTasks());
-    }
-
-    @Test
     void setAndGetSavePath() {
         String newPath = Paths.get("").toAbsolutePath() + "\\TestSaves\\";
         assertNotEquals(newPath, tm.getSavePath());
@@ -128,103 +105,4 @@ class FileBackedTaskManagerTest {
         assertEquals(newFileName, tm.getFileName());
     }
 
-    @Test
-    void addTask() {
-        tm.addTask(task1);
-        assertEquals(task1, tm.getTaskList().getFirst());
-    }
-
-    @Test
-    void addEpicAndSubTaskAndAddSubTaskWithWrongEpic() {
-        assertThrows(TaskException.class, () -> tm.addSubTask(subTask1));
-        tm.addEpic(epic1);
-        subTask1.setEpicId(epic1.getTaskID());
-        tm.addSubTask(subTask1);
-        assertEquals(subTask1, tm.getSubTaskList().getFirst());
-        assertEquals(subTask1, epic1.getSubTaskList().getFirst());
-    }
-
-    @Test
-    void clearTaskAndSubtaskAndEpicLists() {
-        tm.addTask(task1);
-        tm.addTask(task2);
-        tm.addEpic(epic1);
-        tm.addSubTask(subTask1);
-        tm.addSubTask(subTask2);
-        assertEquals(2, tm.getTaskList().size());
-        assertEquals(1, tm.getEpicList().size());
-        assertEquals(2, tm.getSubTaskList().size());
-    }
-
-    @Test
-    void deleteTask() {
-        tm.addTask(task1);
-        tm.addTask(task2);
-        assertEquals(2, tm.getTaskList().size());
-        tm.deleteTask(task1.getTaskID());
-        assertEquals(1, tm.getTaskList().size());
-    }
-
-    @Test
-    void deleteSubTaskAndEpic() {
-        tm.addTask(task1);
-        tm.addTask(task2);
-        tm.addEpic(epic1);
-        tm.addSubTask(subTask1);
-        tm.addSubTask(subTask2);
-        assertEquals(2, tm.getSubTaskList().size());
-        tm.deleteSubTask(subTask1.getTaskID());
-        assertEquals(1, tm.getSubTaskList().size());
-        assertFalse(tm.getSubTaskList().isEmpty());
-        assertFalse(tm.getEpicList().isEmpty());
-        tm.deleteEpic(epic1.getTaskID());
-        assertTrue(tm.getSubTaskList().isEmpty());
-        assertTrue(tm.getEpicList().isEmpty());
-    }
-
-    @Test
-    void setNewTaskStatus() {
-        tm.addTask(task1);
-        assertEquals(TaskStatus.NEW, task1.getStatus());
-        tm.setNewTaskStatus(1, TaskStatus.DONE);
-        assertEquals(TaskStatus.DONE, task1.getStatus());
-    }
-
-    @Test
-    void setNewSubTaskStatus() {
-        tm.addTask(task1);
-        tm.addTask(task2);
-        tm.addEpic(epic1);
-        tm.addSubTask(subTask1);
-        tm.addSubTask(subTask2);
-        assertEquals(TaskStatus.NEW, epic1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask2.getStatus());
-
-        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.IN_PROGRESS);
-        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
-        assertEquals(TaskStatus.IN_PROGRESS, subTask1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask2.getStatus());
-
-        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.DONE);
-        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
-        assertEquals(TaskStatus.DONE, subTask1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask2.getStatus());
-
-        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.IN_PROGRESS);
-        assertEquals(TaskStatus.IN_PROGRESS, epic1.getStatus());
-        assertEquals(TaskStatus.DONE, subTask1.getStatus());
-        assertEquals(TaskStatus.IN_PROGRESS, subTask2.getStatus());
-
-        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.DONE);
-        assertEquals(TaskStatus.DONE, epic1.getStatus());
-        assertEquals(TaskStatus.DONE, subTask1.getStatus());
-        assertEquals(TaskStatus.DONE, subTask2.getStatus());
-
-        tm.setNewSubTaskStatus(subTask1.getTaskID(), TaskStatus.NEW);
-        tm.setNewSubTaskStatus(subTask2.getTaskID(), TaskStatus.NEW);
-        assertEquals(TaskStatus.NEW, epic1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask1.getStatus());
-        assertEquals(TaskStatus.NEW, subTask2.getStatus());
-    }
 }

@@ -3,7 +3,6 @@ package com.bistricaIurie.TaskTracker.service;
 import com.bistricaIurie.TaskTracker.model.*;
 import com.bistricaIurie.TaskTracker.model.error.FileCeckException;
 import com.bistricaIurie.TaskTracker.model.error.ManagerSaveException;
-import com.bistricaIurie.TaskTracker.model.error.TaskException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -13,9 +12,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
@@ -23,18 +20,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static String fileName = "Tasks.csv";
     private static final Path dir = Paths.get(savePath);
     private static final Path saveFile = Paths.get(savePath, fileName);
-    private final Comparator<Task> comparator = new Comparator<Task>() {
-        @Override
-        public int compare(Task o1, Task o2) {
-            if (o1.getStartTime().isBefore(o2.getStartTime())) {
-                return -1;
-            } else if (o1.getStartTime().isAfter(o2.getStartTime())) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-    private TreeSet<Task> prioritizedTasks = new TreeSet<>(comparator);
 
     private static void checkFileState() throws FileCeckException {
         try {
@@ -47,18 +32,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
         } catch (Exception e) {
             throw new FileCeckException("Ошибка при проверке файла сохранения.");
-        }
-    }
-
-    public boolean checkTaskIntersection(Task task) throws TaskException {
-        try {
-            return prioritizedTasks.stream()
-                    .noneMatch(t -> task.getStartTime().isAfter(t.getStartTime()) &&
-                            task.getStartTime().isBefore(t.getEndTime()) ||
-                            task.getEndTime().isAfter(t.getStartTime()) &&
-                                    task.getEndTime().isBefore(t.getEndTime()));
-        } catch (NullPointerException e) {
-            throw new TaskException("Не установленно время начало задачи.");
         }
     }
 
@@ -190,16 +163,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return newManager;
     }
 
-    public void prioritizeTask(Task task) {
-        if (task.getStartTime() != null) {
-            prioritizedTasks.add(task);
-        }
-    }
-
-    public List<Task> getPrioritizedTasks() {
-        return new ArrayList<>(prioritizedTasks);
-    }
-
     public void setSavePath(String savePath) {
         FileBackedTaskManager.savePath = savePath;
     }
@@ -219,13 +182,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void loadTask(Task task) {
         super.setTaskCount(task.getTaskID() - 1);
         super.addTask(task);
-        prioritizeTask(task);
+        if (task.getStartTime() != null) {
+            prioritizeTask(task);
+        }
     }
 
     public void loadSubTask(SubTask task) {
         super.setTaskCount(task.getTaskID() - 1);
         super.addSubTask(task);
-        prioritizeTask(task);
+        if (task.getStartTime() != null) {
+            prioritizeTask(task);
+        }
     }
 
     public void loadEpic(Epic task) {
@@ -235,20 +202,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void addTask(Task task) {
-        if (checkTaskIntersection(task)) {
-            super.addTask(task);
-            save();
-            prioritizeTask(task);
-        }
+        super.addTask(task);
+        save();
     }
 
     @Override
-    public void addSubTask(SubTask task) throws TaskException {
-        if (checkTaskIntersection(task)) {
-            super.addSubTask(task);
-            save();
-            prioritizeTask(task);
-        }
+    public void addSubTask(SubTask task) {
+        super.addSubTask(task);
+        save();
     }
 
     @Override
@@ -259,53 +220,32 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public void clearTaskList() {
-        getTaskList().forEach(
-                t -> prioritizedTasks.remove(t)
-        );
         super.clearTaskList();
         save();
     }
 
     @Override
     public void clearSubTaskList() {
-        getSubTaskList().forEach(
-                s -> prioritizedTasks.remove(s)
-        );
         super.clearSubTaskList();
         save();
     }
 
     @Override
     public void clearEpicList() {
-        getEpicList().forEach(
-                e -> {
-                    e.getSubTaskList().forEach(
-                            s -> prioritizedTasks.remove(s)
-                    );
-                }
-        );
         super.clearEpicList();
         save();
     }
 
     @Override
     public void updateTask(Task task) {
-        prioritizedTasks.remove(task);
-        if (checkTaskIntersection(task)) {
-            super.updateTask(task);
-            save();
-            prioritizeTask(task);
-        }
+        super.updateTask(task);
+        save();
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
-        prioritizedTasks.remove(subTask);
-        if (checkTaskIntersection(subTask)) {
-            super.updateSubTask(subTask);
-            save();
-            prioritizeTask(subTask);
-        }
+        super.updateSubTask(subTask);
+        save();
     }
 
     @Override

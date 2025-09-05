@@ -1,7 +1,5 @@
 package com.bistricaIurie.TaskTracker.model;
 
-import com.bistricaIurie.TaskTracker.model.error.TaskException;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -108,12 +106,11 @@ public class Task {
         return type;
     }
 
-    public LocalDateTime getEndTime() throws TaskException {
-        try {
+    public LocalDateTime getEndTime() {
+        if (startTime != null) {
             return startTime.plusMinutes(duration.toMinutes());
-        } catch (NullPointerException e) {
-            throw new TaskException("Не задано время начало задачи.");
         }
+        return null;
     }
 
     @Override
