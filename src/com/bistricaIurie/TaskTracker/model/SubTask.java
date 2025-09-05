@@ -1,19 +1,28 @@
 package com.bistricaIurie.TaskTracker.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class SubTask extends Task {
 
     private int epicId;
-    private TaskType type;
+    private final TaskType type = TaskType.SUBTASK;
 
     public SubTask(String name, String description, Integer epicId) {
         super(name, description);
-        this.type = TaskType.SUBTASK;
         this.epicId = epicId;
     }
 
-    public SubTask(int taskID, String taskName, String description, TaskStatus status, int epicId) {
-        super(taskID,taskName, description, status);
-        this.type = TaskType.SUBTASK;
+    public SubTask(int taskID, String taskName, String description, TaskStatus status, int epicId,
+                   Duration duration, LocalDateTime startTime) {
+        super(taskID, taskName, description, status, duration, startTime);
+        this.epicId = epicId;
+    }
+
+    public SubTask(int taskID, String taskName, String description, TaskStatus status, int epicId,
+                   Duration duration) {
+        super(taskID, taskName, description, status, duration);
         this.epicId = epicId;
     }
 
@@ -31,12 +40,17 @@ public class SubTask extends Task {
     }
 
     @Override
-    public String toString() { //id,type,name,status,description,epic
+    public String toString() {
+        String sTime = getStartTime() == null ? "null"
+                : getStartTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+
         return getTaskID() +
-                "," + getType() +
-                "," + getTaskName() +
-                "," + getStatus() +
-                "," + getDescription() +
-                "," + getEpicId();
+                "," + this.getType() +
+                "," + this.getTaskName() +
+                "," + this.getStatus() +
+                "," + this.getDescription() +
+                "," + this.getDuration().toMinutes() +
+                "," + sTime +
+                "," + this.getEpicId();
     }
 }

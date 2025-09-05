@@ -4,6 +4,7 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import com.bistricaIurie.TaskTracker.model.error.TaskException;
 
 import java.util.*;
 
@@ -12,7 +13,30 @@ public class InMemoryTaskManager implements TaskManager {
     private Map<Integer, Task> tasks = new HashMap<>();
     private Map<Integer, SubTask> subTasks = new HashMap<>();
     private Map<Integer, Epic> epics = new HashMap<>();
-    private int taskCount = 0;
+    private static int taskCount = 0;
+    private final Comparator<Task> comparator = Comparator.comparing(Task::getStartTime);
+    private TreeSet<Task> prioritizedTasks = new TreeSet<>(comparator);
+
+    public boolean checkTaskIntersection(Task task) {
+        if (task.getStartTime() == null) {
+            return true;
+        }
+        return prioritizedTasks.stream()
+                .noneMatch(t -> task.getStartTime().isAfter(t.getStartTime()) &&
+                        task.getStartTime().isBefore(t.getEndTime()) ||
+                        task.getEndTime().isAfter(t.getStartTime()) &&
+                                task.getEndTime().isBefore(t.getEndTime()));
+    }
+
+    public void prioritizeTask(Task task) {
+        if (task.getStartTime() != null) {
+            prioritizedTasks.add(task);
+        }
+    }
+
+    public List<Task> getPrioritizedTasks() {
+        return new ArrayList<>(prioritizedTasks);
+    }
 
     public HistoryManager getHistoryManager() {
         return historyManager;
@@ -20,18 +44,28 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addTask(Task task) {
-        taskCount++;
-        task.setTaskID(taskCount);
-        tasks.put(task.getTaskID(), task);
+        if (checkTaskIntersection(task)) {
+            taskCount++;
+            task.setTaskID(taskCount);
+            tasks.put(task.getTaskID(), task);
+            prioritizeTask(task);
+        }
     }
 
     @Override
     public void addSubTask(SubTask task) {
-        taskCount++;
-        task.setTaskID(taskCount);
-        subTasks.put(task.getTaskID(), task);
-        epics.get(task.getEpicId()).addSubtask(task);
-        epics.get(task.getEpicId()).updateEpicStatus();
+        if (checkTaskIntersection(task)) {
+            taskCount++;
+            task.setTaskID(taskCount);
+            try {
+                epics.get(task.getEpicId()).addSubtask(task);
+                subTasks.put(task.getTaskID(), task);
+            } catch (NullPointerException e) {
+                taskCount--;
+                throw new TaskException("Попытка добавить подзадачу без указания суперзадачи к которой она принадлежит.");
+            }
+            prioritizeTask(task);
+        }
     }
 
     @Override
@@ -58,20 +92,30 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void clearTaskList() {
+        getTaskList().forEach(
+                t -> prioritizedTasks.remove(t)
+        );
         tasks.clear();
     }
 
     @Override
     public void clearSubTaskList() {
+        getSubTaskList().forEach(
+                s -> prioritizedTasks.remove(s)
+        );
         subTasks.clear();
-        for (Integer i : epics.keySet()) {
-            epics.get(i).subTaskList.clear();
-            epics.get(i).updateEpicStatus();
-        }
+        epics.values().forEach(Epic::clearSubtaskList);
     }
 
     @Override
     public void clearEpicList() {
+        getEpicList().forEach(
+                e -> {
+                    e.getSubTaskList().forEach(
+                            s -> prioritizedTasks.remove(s)
+                    );
+                }
+        );
         epics.clear();
         subTasks.clear();
     }
@@ -99,14 +143,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        tasks.put(task.getTaskID(), task);
+        prioritizedTasks.remove(tasks.get(task.getTaskID()));
+        if (checkTaskIntersection(task)) {
+            tasks.put(task.getTaskID(), task);
+            prioritizeTask(task);
+        }
     }
 
     @Override
     public void updateSubTask(SubTask subTask) {
-        subTasks.put(subTask.getTaskID(), subTask);
-        epics.get(subTask.getEpicId()).subTaskList.put(subTask.getTaskID(), subTask);
-        epics.get(subTask.getEpicId()).updateEpicStatus();
+        prioritizedTasks.remove(subTasks.get(subTask.getTaskID()));
+        if (checkTaskIntersection(subTask)) {
+            subTasks.put(subTask.getTaskID(), subTask);
+            epics.get(subTask.getEpicId()).addSubtask(subTask);
+            prioritizeTask(subTask);
+        }
     }
 
     @Override
@@ -116,21 +167,22 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteTask(Integer id) {
+        prioritizedTasks.remove(tasks.get(id));
         tasks.remove(id);
     }
 
     @Override
     public void deleteSubTask(Integer id) {
-        epics.get(subTasks.get(id).getEpicId()).subTaskList.remove(id);
-        epics.get(subTasks.get(id).getEpicId()).updateEpicStatus();
+        prioritizedTasks.remove(subTasks.get(id));
+        epics.get(subTasks.get(id).getEpicId()).deleteSubtask(id);
         subTasks.remove(id);
     }
 
     @Override
     public void deleteEpic(Integer id) {
-        for (SubTask subTask : epics.get(id).getSubTaskList()) {
-            subTasks.remove(subTask.getTaskID());
-        }
+        epics.get(id).getSubTaskList().forEach(
+                s -> subTasks.remove(s.getTaskID())
+        );
         epics.remove(id);
     }
 
@@ -139,6 +191,9 @@ public class InMemoryTaskManager implements TaskManager {
         Task tempTask = tasks.get(id);
         tempTask.setStatus(newStatus);
         updateTask(tempTask);
+        if (newStatus == TaskStatus.DONE) {
+            prioritizedTasks.remove(tasks.get(id));
+        }
     }
 
     @Override
@@ -146,6 +201,9 @@ public class InMemoryTaskManager implements TaskManager {
         SubTask tempTask = subTasks.get(id);
         tempTask.setStatus(newStatus);
         updateSubTask(tempTask);
+        if (newStatus == TaskStatus.DONE) {
+            prioritizedTasks.remove(subTasks.get(id));
+        }
     }
 
     @Override
@@ -153,12 +211,12 @@ public class InMemoryTaskManager implements TaskManager {
         return epics.get(id).getSubTaskList();
     }
 
-    public int getTaskCount() {
+    public static int getTaskCount() {
         return taskCount;
     }
 
     public void setTaskCount(int taskCount) {
-        this.taskCount = taskCount;
+        InMemoryTaskManager.taskCount = taskCount;
     }
 
     @Override
@@ -176,6 +234,5 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Task> getHistory() {
         return historyManager.getHistory();
     }
-
 
 }

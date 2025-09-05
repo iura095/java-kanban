@@ -1,5 +1,10 @@
-import com.bistricaIurie.TaskTracker.model.*;
-import com.bistricaIurie.TaskTracker.service.*;
+import com.bistricaIurie.TaskTracker.model.Epic;
+import com.bistricaIurie.TaskTracker.model.SubTask;
+import com.bistricaIurie.TaskTracker.model.Task;
+import com.bistricaIurie.TaskTracker.service.FileBackedTaskManager;
+import com.bistricaIurie.TaskTracker.service.TaskManager;
+
+import java.time.LocalDateTime;
 
 public class Main {
 
@@ -10,25 +15,30 @@ public class Main {
         taskManager.addTask(new Task("task2", "eto 2oi task"));
         taskManager.addTask(new Task("task3", "eto 3ii task"));
         taskManager.addEpic(new Epic("epic1", "eto 1ii epic"));
-        taskManager.addEpic(new Epic("epic2", "eto 2oi epic"));
         taskManager.addSubTask(new SubTask("subtask1", "etub subtask1 from epic1", 4));
         taskManager.addSubTask(new SubTask("subtask2", "etub subtask2 from epic1", 4));
         taskManager.addSubTask(new SubTask("subtask3", "etub subtask3 from epic1", 4));
-        taskManager.addSubTask(new SubTask("subtask4", "etub subtask1 from epic2", 4));
-        taskManager.addSubTask(new SubTask("subtask5", "etub subtask2 from epic2", 4));
-        taskManager.addSubTask(new SubTask("subtask6", "etub subtask3 from epic2", 4));
-        taskManager.getSubTaskByID(6);
-        taskManager.getTaskByID(1);
+        taskManager.addTask(new Task("task4", "eto 4ii task"));
+        taskManager.addEpic(new Epic("epic2", "eto 2oi epic"));
+        taskManager.addSubTask(new SubTask("subtask4", "etub subtask1 from epic2", 9));
+        taskManager.addSubTask(new SubTask("subtask5", "etub subtask2 from epic2", 9));
+        taskManager.addSubTask(new SubTask("subtask6", "etub subtask3 from epic2", 9));
+        taskManager.getTaskByID(1).setStartTime(LocalDateTime.now());
         taskManager.getEpicByID(4);
+        taskManager.getTaskByID(3).setStartTime(LocalDateTime.now().plusMinutes(5));
+        taskManager.getSubTaskByID(6).setStartTime(LocalDateTime.now().plusMinutes(4));
+        taskManager.getSubTaskByID(7).setStartTime(LocalDateTime.now().plusMinutes(55));
+        taskManager.deleteTask(2);
+        taskManager.getSubTaskByID(10).setStartTime(LocalDateTime.now().plusMinutes(2));
         taskManager.getSubTaskByID(6);
-        taskManager.getSubTaskByID(7);
-        taskManager.getSubTaskByID(8);
-        taskManager.getSubTaskByID(9);
-        taskManager.getSubTaskByID(6);
+
 
 //        printAllTasks(taskManager);
         FileBackedTaskManager tm = FileBackedTaskManager.loadFromFile();
         printAllTasks(tm);
+        for (Task task : tm.getPrioritizedTasks()) {
+            System.out.println(task);
+        }
 
 
     }
