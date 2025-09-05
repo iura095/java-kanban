@@ -2,7 +2,9 @@ package com.bistricaIurie.TaskTracker.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Epic extends Task {
 
@@ -73,7 +75,7 @@ public class Epic extends Task {
                 }
                 setDuration(this.getDuration().plus(s.getDuration()));
             }).map(Task::getStatus).toList();
-            if (list.stream().allMatch( t -> t == TaskStatus.NEW)) {
+            if (list.stream().allMatch(t -> t == TaskStatus.NEW)) {
                 setStatus(TaskStatus.NEW);
             } else if (list.stream().allMatch(t -> t == TaskStatus.DONE)) {
                 this.setStatus(TaskStatus.DONE);
