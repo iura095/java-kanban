@@ -54,30 +54,30 @@ public class Epic extends Task {
         setDuration(Duration.ZERO);
         setEndTime(null);
         if (!subTaskList.isEmpty()) {
-            List<TaskStatus> list = subTaskList.values().stream().peek(s -> {
-                if (s.getStartTime() != null) {
+            List<TaskStatus> statusList = subTaskList.values().stream().peek(subTask -> {
+                if (subTask.getStartTime() != null) {
                     if (this.getStartTime() == null) {
-                        this.setStartTime(s.getStartTime());
+                        this.setStartTime(subTask.getStartTime());
                     } else {
-                        if (s.getStartTime().isBefore(this.getStartTime())) {
-                            this.setStartTime(s.getStartTime());
+                        if (subTask.getStartTime().isBefore(this.getStartTime())) {
+                            this.setStartTime(subTask.getStartTime());
                         }
                     }
                 }
-                if (s.getEndTime() != null) {
+                if (subTask.getEndTime() != null) {
                     if (this.getEndTime() == null) {
-                        setEndTime(s.getEndTime());
+                        setEndTime(subTask.getEndTime());
                     } else {
-                        if (s.getEndTime().isAfter(this.getEndTime())) {
-                            setEndTime(s.getEndTime());
+                        if (subTask.getEndTime().isAfter(this.getEndTime())) {
+                            setEndTime(subTask.getEndTime());
                         }
                     }
                 }
-                setDuration(this.getDuration().plus(s.getDuration()));
+                setDuration(this.getDuration().plus(subTask.getDuration()));
             }).map(Task::getStatus).toList();
-            if (list.stream().allMatch(t -> t == TaskStatus.NEW)) {
+            if (statusList.stream().allMatch(taskStatus -> taskStatus == TaskStatus.NEW)) {
                 setStatus(TaskStatus.NEW);
-            } else if (list.stream().allMatch(t -> t == TaskStatus.DONE)) {
+            } else if (statusList.stream().allMatch(taskStatus -> taskStatus == TaskStatus.DONE)) {
                 this.setStatus(TaskStatus.DONE);
             } else {
                 this.setStatus(TaskStatus.IN_PROGRESS);
