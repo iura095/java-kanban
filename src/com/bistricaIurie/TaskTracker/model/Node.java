@@ -23,10 +23,6 @@ public class Node {
         return value;
     }
 
-//    public void setValue(Task value) {
-//        this.value = value;
-//    }
-
     public Node getNext() {
         return next;
     }

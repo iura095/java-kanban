@@ -1,4 +1,4 @@
-package com.bistricaIurie.TaskTracker.model;
+package com.bistricaIurie.TaskTracker.model.error;
 
 public class ManagerSaveException extends RuntimeException {
 

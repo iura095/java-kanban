@@ -1,7 +1,12 @@
 package com.bistricaIurie.TaskTracker.model;
 
+import com.bistricaIurie.TaskTracker.model.error.TaskException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
@@ -59,6 +64,32 @@ class TaskTest {
     @Test
     void taskIdEquals() {
         Task task2 = new Task("task2", "descriptiontask2");
-        assertTrue(task.equals(task2));
+        assertEquals(task, task2);
+    }
+
+    @Test
+    void getAndSetDuration() {
+        assertEquals(0, task.getDuration().toMinutes());
+        task.setDuration(Duration.ofMinutes(5));
+        assertEquals(5, task.getDuration().toMinutes());
+    }
+
+    @Test
+    void getAndSetStartTime() {
+        assertNull(task.getStartTime());
+        task.setStartTime(LocalDateTime.MIN);
+        assertEquals(LocalDateTime.MIN, task.getStartTime());
+    }
+
+    @Test
+    void getEndTime() {
+        task.setStartTime(LocalDateTime.MIN);
+        task.setDuration(Duration.ofMinutes(15));
+        assertEquals(LocalDateTime.MIN.plusMinutes(15), task.getEndTime());
+    }
+
+    @Test
+    void getTipe() {
+        assertEquals(TaskType.TASK, task.getType());
     }
 }
