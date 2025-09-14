@@ -4,7 +4,9 @@ import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import com.google.gson.JsonElement;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +29,11 @@ public interface TaskManager {
 
     void clearEpicList();
 
-    Task getTaskByID(Integer id);
+    Task getTaskByID(Integer id) throws FileNotFoundException;
 
-    SubTask getSubTaskByID(Integer id);
+    SubTask getSubTaskByID(Integer id) throws FileNotFoundException;
 
-    Epic getEpicByID(Integer id);
+    Epic getEpicByID(Integer id) throws FileNotFoundException;
 
     void updateTask(Task task);
 
@@ -51,5 +53,9 @@ public interface TaskManager {
 
     ArrayList<SubTask> getSubTaskListByEpicId(Integer id);
 
+    void setTaskCount(int taskCount);
+
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks();
 }

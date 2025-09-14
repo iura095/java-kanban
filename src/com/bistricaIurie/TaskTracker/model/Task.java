@@ -11,7 +11,7 @@ public class Task {
     private String taskName;
     private String description;
     private TaskStatus status;
-    private final TaskType type = TaskType.TASK;
+    private static final TaskType type = TaskType.TASK;
     private Duration duration = Duration.ZERO;
     private LocalDateTime startTime;
 
@@ -37,7 +37,7 @@ public class Task {
     }
 
     public Task(int taskID, String taskName, String description, TaskStatus status,
-                Duration duration, LocalDateTime startTime) {
+                 Duration duration, LocalDateTime startTime) {
         this.taskID = taskID;
         this.taskName = taskName;
         this.description = description;

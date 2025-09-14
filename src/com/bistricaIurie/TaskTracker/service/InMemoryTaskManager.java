@@ -1,9 +1,7 @@
 package com.bistricaIurie.TaskTracker.service;
 
-import com.bistricaIurie.TaskTracker.model.Epic;
-import com.bistricaIurie.TaskTracker.model.SubTask;
-import com.bistricaIurie.TaskTracker.model.Task;
-import com.bistricaIurie.TaskTracker.model.TaskStatus;
+import com.bistricaIurie.TaskTracker.model.*;
+import com.bistricaIurie.TaskTracker.model.error.NotFoundException;
 import com.bistricaIurie.TaskTracker.model.error.TaskException;
 
 import java.util.*;
@@ -44,35 +42,51 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addTask(Task task) {
-        if (checkTaskIntersection(task)) {
-            taskCount++;
-            task.setTaskID(taskCount);
-            tasks.put(task.getTaskID(), task);
-            prioritizeTask(task);
+        if (task.getType().equals(TaskType.TASK)) {
+            if (checkTaskIntersection(task)) {
+                taskCount++;
+                task.setTaskID(taskCount);
+                tasks.put(task.getTaskID(), task);
+                prioritizeTask(task);
+            } else {
+                throw new TaskException("Задача пересекается с другими по времени выполнения.");
+            }
+        } else {
+            throw new TaskException("Попытка добавить задачу другого типа.");
         }
     }
 
     @Override
     public void addSubTask(SubTask task) {
-        if (checkTaskIntersection(task)) {
-            taskCount++;
-            task.setTaskID(taskCount);
-            try {
-                epics.get(task.getEpicId()).addSubtask(task);
-                subTasks.put(task.getTaskID(), task);
-            } catch (NullPointerException e) {
-                taskCount--;
-                throw new TaskException("Попытка добавить подзадачу без указания суперзадачи к которой она принадлежит.");
+        if (task.getType().equals(TaskType.SUBTASK)) {
+            if (checkTaskIntersection(task)) {
+                taskCount++;
+                task.setTaskID(taskCount);
+                try {
+                    epics.get(task.getEpicId()).addSubtask(task);
+                    subTasks.put(task.getTaskID(), task);
+                } catch (NullPointerException e) {
+                    taskCount--;
+                    throw new TaskException("Попытка добавить подзадачу без указания суперзадачи к которой она принадлежит.");
+                }
+                prioritizeTask(task);
+            } else {
+                throw new TaskException("Задача пересекается с другими по времени выполнения.");
             }
-            prioritizeTask(task);
+        } else {
+            throw new TaskException("Попытка добавить задачу другого типа.");
         }
     }
 
     @Override
     public void addEpic(Epic task) {
-        taskCount++;
-        task.setTaskID(taskCount);
-        epics.put(task.getTaskID(), task);
+        if (task.getType().equals(TaskType.EPIC)) {
+            taskCount++;
+            task.setTaskID(taskCount);
+            epics.put(task.getTaskID(), task);
+        } else {
+            throw new TaskException("Попытка добавить задачу другого типа.");
+        }
     }
 
     @Override
@@ -124,21 +138,27 @@ public class InMemoryTaskManager implements TaskManager {
     public Task getTaskByID(Integer id) {
         Task task = tasks.get(id);
         historyManager.add(task);
-        return task;
+        if (task == null) {
+            throw new NotFoundException("Задачи с таким id не обнаружено.");
+        } else return task;
     }
 
     @Override
     public SubTask getSubTaskByID(Integer id) {
         SubTask subTask = subTasks.get(id);
         historyManager.add(subTask);
-        return subTask;
+        if (subTask == null) {
+            throw new NotFoundException("Задачи с таким id не обнаружено.");
+        } else return subTask;
     }
 
     @Override
     public Epic getEpicByID(Integer id) {
         Epic epic = epics.get(id);
         historyManager.add(epic);
-        return epic;
+        if (epic == null) {
+            throw new NotFoundException("Задачи с таким id не обнаружено.");
+        } else return epic;
     }
 
     @Override
@@ -147,6 +167,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (checkTaskIntersection(task)) {
             tasks.put(task.getTaskID(), task);
             prioritizeTask(task);
+        } else {
+            throw new TaskException("Задача пересекается с другими по времени выполнения.");
         }
     }
 
@@ -157,6 +179,8 @@ public class InMemoryTaskManager implements TaskManager {
             subTasks.put(subTask.getTaskID(), subTask);
             epics.get(subTask.getEpicId()).addSubtask(subTask);
             prioritizeTask(subTask);
+        } else {
+            throw new TaskException("Задача пересекается с другими по времени выполнения.");
         }
     }
 
@@ -215,6 +239,7 @@ public class InMemoryTaskManager implements TaskManager {
         return taskCount;
     }
 
+    @Override
     public void setTaskCount(int taskCount) {
         InMemoryTaskManager.taskCount = taskCount;
     }

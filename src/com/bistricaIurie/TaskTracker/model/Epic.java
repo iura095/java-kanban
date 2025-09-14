@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Epic extends Task {
 
-    private final TaskType type = TaskType.EPIC;
+    private static final TaskType type = TaskType.EPIC;
     private HashMap<Integer, SubTask> subTaskList = new HashMap<>();
     private LocalDateTime endTime;
 
