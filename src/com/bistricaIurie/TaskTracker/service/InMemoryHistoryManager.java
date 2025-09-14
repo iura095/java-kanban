@@ -95,4 +95,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         return size;
     }
 
+    public void clearHistory() {
+        historyList.clear();
+        head.setNext(null);
+        tail.setPrev(null);
+        size = 0;
+    }
+
 }

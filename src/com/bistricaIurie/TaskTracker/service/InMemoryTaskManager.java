@@ -260,4 +260,8 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    public void clearHistory() {
+        historyManager.clearHistory();
+    }
+
 }

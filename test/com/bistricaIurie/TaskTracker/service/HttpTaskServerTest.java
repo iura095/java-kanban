@@ -7,6 +7,7 @@ import com.bistricaIurie.TaskTracker.model.TaskStatus;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,25 +24,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskServerTest {
 
-    TaskManager manager = new InMemoryTaskManager();
+    static TaskManager manager = new InMemoryTaskManager();
     HttpTaskServer taskServer = new HttpTaskServer(manager);
     Gson gson = BaseHttpHandler.getGson();
     HttpClient client = HttpClient.newHttpClient();
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void beforeAll() {
         manager.clearTaskList();
         manager.clearSubTaskList();
         manager.clearEpicList();
-        taskServer.startServer();
+        manager.clearHistory();
+        manager.setTaskCount(0);
 
+    }
+
+    @BeforeEach
+    void setUp() {
+        manager.clearTaskList();
+        manager.clearEpicList();
+        manager.clearSubTaskList();
+        manager.clearHistory();
+        manager.setTaskCount(0);
+        taskServer.startServer();
     }
 
     @AfterEach
     void tearDown() {
         taskServer.stopServer();
         client.close();
-        manager.setTaskCount(0);
     }
 
     @Test
@@ -176,7 +187,7 @@ class HttpTaskServerTest {
     @Test
     public void testGetSubtaskById() throws IOException, InterruptedException {
         Epic epic = new Epic("name", "desc");
-        SubTask subTask = new SubTask(1, "Test", "Testing",
+        SubTask subTask = new SubTask(2, "Test", "Testing",
                 TaskStatus.NEW, 1, Duration.ofMinutes(5), LocalDateTime.now());
         manager.addEpic(epic);
         manager.addSubTask(subTask);
@@ -219,7 +230,7 @@ class HttpTaskServerTest {
     @Test
     public void testPostSubtask() throws IOException, InterruptedException {
         Epic epic = new Epic("name", "desc");
-        SubTask subTask = new SubTask(2, "Test", "Testing",
+        SubTask subTask = new SubTask(0, "Test", "Testing",
                 TaskStatus.NEW, 1, Duration.ofMinutes(5), LocalDateTime.now());
         manager.addEpic(epic);
 
@@ -354,7 +365,6 @@ class HttpTaskServerTest {
                 TaskStatus.NEW, Duration.ofMinutes(5), LocalDateTime.now());
         manager.addTask(task);
         manager.getTaskByID(1);
-
         URI url = URI.create("http://localhost:8080/history");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
