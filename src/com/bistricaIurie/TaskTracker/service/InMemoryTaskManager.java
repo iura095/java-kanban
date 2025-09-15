@@ -149,7 +149,9 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.add(subTask);
         if (subTask == null) {
             throw new NotFoundException("Задачи с таким id не обнаружено.");
-        } else return subTask;
+        } else {
+            return subTask;
+        }
     }
 
     @Override
@@ -248,7 +250,9 @@ public class InMemoryTaskManager implements TaskManager {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         InMemoryTaskManager that = (InMemoryTaskManager) o;
-        return Objects.equals(tasks, that.tasks) && Objects.equals(subTasks, that.subTasks) && Objects.equals(epics, that.epics);
+        return Objects.equals(tasks, that.tasks)
+                && Objects.equals(subTasks, that.subTasks)
+                && Objects.equals(epics, that.epics);
     }
 
     @Override

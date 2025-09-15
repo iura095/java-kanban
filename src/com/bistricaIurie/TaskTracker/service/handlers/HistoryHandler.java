@@ -1,13 +1,22 @@
-package com.bistricaIurie.TaskTracker.service;
+package com.bistricaIurie.TaskTracker.service.handlers;
 
 import com.bistricaIurie.TaskTracker.model.Endpoint;
 import com.bistricaIurie.TaskTracker.model.error.ManagerSaveException;
+import com.bistricaIurie.TaskTracker.service.TaskManager;
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 
-class HistoryHandler extends BaseHttpHandler implements HttpHandler {
+public class HistoryHandler extends BaseHttpHandler implements HttpHandler {
+    TaskManager taskManager;
+    Gson gson;
+
+    public HistoryHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+        this.gson = getGson();
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

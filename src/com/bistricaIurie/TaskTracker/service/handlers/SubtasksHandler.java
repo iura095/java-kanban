@@ -1,20 +1,27 @@
-package com.bistricaIurie.TaskTracker.service;
+package com.bistricaIurie.TaskTracker.service.handlers;
 
 import com.bistricaIurie.TaskTracker.model.Endpoint;
 import com.bistricaIurie.TaskTracker.model.SubTask;
 import com.bistricaIurie.TaskTracker.model.error.ManagerSaveException;
 import com.bistricaIurie.TaskTracker.model.error.NotFoundException;
 import com.bistricaIurie.TaskTracker.model.error.TaskException;
-import com.google.gson.JsonElement;
+import com.bistricaIurie.TaskTracker.service.TaskManager;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
+public class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
+
+    TaskManager taskManager;
+    Gson gson;
+
+    public SubtasksHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+        this.gson = getGson();
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -38,38 +45,35 @@ class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
                         answer = gson.toJson(taskManager.getSubTaskByID(Integer.parseInt(path[2])));
                         sendText(exchange, answer, 200);
                     } catch (NotFoundException e) {
-                        e.printStackTrace();
                         sendText(exchange, e.getMessage(), 404);
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
                 case ADD_SUBTASK -> {
-                    String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-                    JsonElement jsonElement = JsonParser.parseString(requestBody);
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                         if (!jsonObject.isJsonObject()) {
-                             sendText(exchange, "Неправильный формат данных.", 406);
-                             return;
-                         }
+                    String requestBody = getRequestBody(exchange);
+                    JsonObject jsonObject = getJsonObject(requestBody);
 
-                         if (jsonObject.has("epicId")) {
-                             try {
-                                 SubTask task = gson.fromJson(requestBody, SubTask.class);
-                                 id = jsonObject.get("taskID").getAsInt();
-                                 if (id == 0) {
-                                     taskManager.addSubTask(task);
-                                     sendText(exchange, "Задача успешно добавлена.", 201);
-                                 } else {
-                                     taskManager.updateSubTask(task);
-                                     sendText(exchange, "Задача успешно обновлена.", 201);
-                                 }
-                             } catch (TaskException e) {
-                                 sendText(exchange, e.getMessage(), 406);
-                             }
-                         } else {
-                             sendText(exchange, "Неправильный формат данных.", 406);
-                         }
+                    if (!jsonObject.isJsonObject()) {
+                        sendText(exchange, "Неправильный формат данных.", 406);
+                        return;
+                    }
+
+                    if (jsonObject.has("epicId")) {
+                        try {
+                            SubTask task = gson.fromJson(requestBody, SubTask.class);
+                            id = jsonObject.get("taskID").getAsInt();
+                            if (id == 0) {
+                                taskManager.addSubTask(task);
+                                sendText(exchange, "Задача успешно добавлена.", 201);
+                            } else {
+                                taskManager.updateSubTask(task);
+                                sendText(exchange, "Задача успешно обновлена.", 201);
+                            }
+                        } catch (TaskException e) {
+                            sendText(exchange, e.getMessage(), 406);
+                        }
+                    } else {
+                        sendText(exchange, "Неправильный формат данных.", 406);
+                    }
                 }
                 case DELETE_SUBTASK -> {
                     taskManager.deleteSubTask(Integer.parseInt(path[2]));

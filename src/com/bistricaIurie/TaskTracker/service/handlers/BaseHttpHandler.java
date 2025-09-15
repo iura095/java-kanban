@@ -1,10 +1,9 @@
-package com.bistricaIurie.TaskTracker.service;
+package com.bistricaIurie.TaskTracker.service.handlers;
 
 import com.bistricaIurie.TaskTracker.model.DurationAdapter;
 import com.bistricaIurie.TaskTracker.model.Endpoint;
 import com.bistricaIurie.TaskTracker.model.LocalDateTimeAdapter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -13,9 +12,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class BaseHttpHandler {
-    TaskManager taskManager = HttpTaskServer.getTaskManager();
-
-    static Gson gson = new GsonBuilder()
+    private static final Gson gson = new GsonBuilder()
             .serializeNulls()
             .setPrettyPrinting()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
@@ -28,6 +25,15 @@ public class BaseHttpHandler {
         exchange.sendResponseHeaders(rCode, response.length);
         exchange.getResponseBody().write(response);
         exchange.close();
+    }
+
+    public String getRequestBody(HttpExchange exchange) throws IOException {
+        return new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    public JsonObject getJsonObject(String requestBody) {
+        JsonElement jsonElement = JsonParser.parseString(requestBody);
+        return jsonElement.getAsJsonObject();
     }
 
     public static Endpoint getEndpoint(String[] path, String requestMethod) {

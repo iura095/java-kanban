@@ -1,20 +1,26 @@
-package com.bistricaIurie.TaskTracker.service;
+package com.bistricaIurie.TaskTracker.service.handlers;
 
 import com.bistricaIurie.TaskTracker.model.Endpoint;
 import com.bistricaIurie.TaskTracker.model.Epic;
 import com.bistricaIurie.TaskTracker.model.error.ManagerSaveException;
 import com.bistricaIurie.TaskTracker.model.error.NotFoundException;
 import com.bistricaIurie.TaskTracker.model.error.TaskException;
-import com.google.gson.JsonElement;
+import com.bistricaIurie.TaskTracker.service.TaskManager;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-class EpicsHandler extends BaseHttpHandler implements HttpHandler {
+public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
+    TaskManager taskManager;
+    Gson gson;
+
+    public EpicsHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+        this.gson = getGson();
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -45,9 +51,8 @@ class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                     sendText(exchange, answer, 200);
                 }
                 case ADD_EPIC -> {
-                    String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-                    JsonElement jsonElement = JsonParser.parseString(requestBody);
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+                    String requestBody = getRequestBody(exchange);
+                    JsonObject jsonObject = getJsonObject(requestBody);
 
                     if (!jsonObject.isJsonObject()) {
                         sendText(exchange, "Неправильный формат данных.", 406);

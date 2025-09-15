@@ -39,6 +39,7 @@ public class Main {
         for (Task task : tm.getPrioritizedTasks()) {
             System.out.println(task);
         }
+
     }
 
     private static void printAllTasks(TaskManager manager) {
