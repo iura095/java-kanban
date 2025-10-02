@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 public class SubTask extends Task {
 
     private int epicId;
-    private final TaskType type = TaskType.SUBTASK;
+    private static final TaskType type = TaskType.SUBTASK;
 
     public SubTask(String name, String description, Integer epicId) {
         super(name, description);

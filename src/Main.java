@@ -4,11 +4,12 @@ import com.bistricaIurie.TaskTracker.model.Task;
 import com.bistricaIurie.TaskTracker.service.FileBackedTaskManager;
 import com.bistricaIurie.TaskTracker.service.TaskManager;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
         FileBackedTaskManager taskManager = new FileBackedTaskManager();
         taskManager.addTask(new Task("task1", "eto 1ii task"));
@@ -32,14 +33,12 @@ public class Main {
         taskManager.getSubTaskByID(10).setStartTime(LocalDateTime.now().plusMinutes(2));
         taskManager.getSubTaskByID(6);
 
-
-//        printAllTasks(taskManager);
+        printAllTasks(taskManager);
         FileBackedTaskManager tm = FileBackedTaskManager.loadFromFile();
         printAllTasks(tm);
         for (Task task : tm.getPrioritizedTasks()) {
             System.out.println(task);
         }
-
 
     }
 

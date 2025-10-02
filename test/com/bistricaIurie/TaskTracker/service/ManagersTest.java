@@ -1,9 +1,9 @@
 package com.bistricaIurie.TaskTracker.service;
 
 import com.bistricaIurie.TaskTracker.model.Task;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ManagersTest {
 
     @Test
-    void getDefault() {
+    void getDefault() throws FileNotFoundException {
         TaskManager taskManager = Managers.getDefault();
         Task task = new Task("name", "asdf");
         task.setTaskID(1);
